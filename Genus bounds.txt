@@ -1,0 +1,107 @@
+/* For odd $n$, this code can be used to obtain lower bounds for the genera
+of the minimal subfields of the splitting field of the polynomial $\Phi_n$. */
+
+start_time := Realtime();
+
+// Evaluates $\nu(s)$.
+nu := function(s)
+sum := 0;
+for d in Divisors(s) do
+	sum := sum + MoebiusMu(s div d)*2^d;
+end for;
+return sum div 2;
+end function;
+
+// Computes the degree of $\Delta_{n,d}$.
+DeltaDegree := function(n, d)
+if d lt n then
+	return nu(d)*EulerPhi(n div d);
+elif d eq n then
+	sum := 0;
+	for k in Divisors(n) do
+		if k lt n then
+			sum := sum + nu(k)*EulerPhi(n div k);
+		end if;
+	end for;
+	return nu(n) - sum;
+end if;
+end function;
+
+// Computes the cardinality of the intersection of two sets.
+// One set is assumed to be much larger than the other. 
+IntersectionSize := function(large_set, small_set)
+	counter := 0;
+	for x in small_set do
+		if x in large_set then
+			counter := counter + 1;
+		end if;
+	end for;
+	return counter;
+end function;
+
+// The code below carries out the calculations described 
+// in the proof of Theorem 7.5 in the paper.
+
+n := 9;
+D := 2*nu(n);
+r := D div n;
+u_factor := Factorial(r - 2)*n^(r - 1);
+Zn := CyclicGroup(n);
+Sr := Sym(r);
+W, s, h:= WreathProduct(Zn, Sr);
+
+t0 := Realtime();
+maximal_subgroups := MaximalSubgroups(W);
+t1 := Realtime(t0);  
+
+rotations := {@ s[i](Zn.1) : i in [1..r] @};
+
+// Construct the set $\Theta_n$.
+Theta_n := {};
+for rho in rotations do
+	for s in [1..n-1] do
+		Include(~Theta_n, rho^s);
+	end for;
+end for;
+
+// Construct the set $\Lambda_n$.
+Lambda_n := {};
+for i in [1..r] do
+	rho_i := rotations[i];
+	for j in [i+1..r] do
+		tau_ij := h([{@i,j@}]);
+		for s in [0..n-1] do
+			Include(~Lambda_n, rho_i^(-s)*tau_ij*rho_i^s);
+		end for;
+	end for;
+end for;
+
+// Compute lower bounds for the desired genera.
+lower_bounds := {};
+for record in maximal_subgroups do
+	M := record`subgroup;
+	M_index := Index(W, M);
+	"Index of subgroup M:", M_index;
+	genus_bound := 1 - M_index;
+	for d in Divisors(n) do
+		if d eq n then
+			u_nd := 2*u_factor*IntersectionSize(M, Lambda_n)/Order(M);
+		else
+			Theta_nd := {};
+			for x in Theta_n do
+				if CycleStructure(x) eq [<n div d, d>, <1, D - n>] then
+					Include(~Theta_nd, x);
+				end if;
+			end for;
+			u_nd := (r - 1)*n*u_factor*IntersectionSize(M, Theta_nd)/Order(M);
+		end if;
+		g_nd_prime := DeltaDegree(n, d)*Ceiling(M_index - Floor((u_nd + M_index)/2));
+		genus_bound := genus_bound + (1/2)*Max(g_nd_prime, 0);
+	end for;
+	genus_bound := Ceiling(genus_bound);
+	"Lower bound for genus:", genus_bound, "\n";
+	Include(~lower_bounds, genus_bound);
+end for;
+"Smallest lower bound:", Min(lower_bounds);
+"Total computation time:", Realtime(start_time);
+"Time to compute maximal subgroups:", t1;

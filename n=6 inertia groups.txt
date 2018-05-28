@@ -1,0 +1,53 @@
+/* Code used to rule out candidates for inertia groups
+as discussed in the proof of Lemma 6.10 of the paper. */
+
+n := 6;
+r := 9;
+Zn := CyclicGroup(n);
+Sr := Sym(r);
+W, s, h:= WreathProduct(Zn, Sr);
+
+rotations := {@ s[i](Zn.1) : i in [1..r] @};
+rho1 := rotations[1];
+rho2 := rotations[2];
+rho3 := rotations[3];
+rho4 := rotations[4];
+rho5 := rotations[5];
+rho6 := rotations[6];
+rho7 := rotations[7];
+rho8 := rotations[8];
+rho9 := rotations[9];
+
+tau12 := h([{@1,2@}]);
+tau23 := h([{@2,3@}]);
+tau45 := h([{@4,5@}]);
+tau67 := h([{@6,7@}]);
+tau89 := h([{@8,9@}]);
+
+A0 := sub<W|(rho1*rho2*rho3*rho4*rho5*rho6*rho7*rho8*rho9)^3>;
+A1 := sub<W|(rho1*rho2*rho3*rho4*rho5*rho6*rho7)^3*tau89>;
+A2 := sub<W|(rho1*rho2*rho3*rho4*rho5)^3*tau67*tau89>;
+A3 := sub<W|(rho1*rho2*rho3)^3*tau45*tau67*tau89>;
+A4 := sub<W|rho1^3*tau23*tau45*tau67*tau89>;
+B0 := sub<W|(rho1*rho2)^3>;
+B1 := sub<W|tau12>;
+
+H0 := Stabilizer(W, {1..6});
+
+for I in [A0, A1, A2, A3, A4] do
+	S := 0;
+	for x in DoubleCosetRepresentatives(W, I, H0) do
+		Ix := I^x;
+		S := S + Index(Ix, Ix meet H0) - 1;
+	end for;
+	S;
+end for;
+
+for I in [B0, B1] do
+	S := 0;
+	for x in DoubleCosetRepresentatives(W, I, H0) do
+		Ix := I^x;
+		S := S + Index(Ix, Ix meet H0) - 1;
+	end for;
+	S;
+end for;

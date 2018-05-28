@@ -1,0 +1,42 @@
+/* Code used to compute the densities of the sets 
+$T_{n,c}$ as discussed in Section 8 of the paper. */
+
+
+// Evaluates $\nu(s)$.
+nu := function(s)
+sum := 0;
+for d in Divisors(s) do
+	sum := sum + MoebiusMu(s div d)*2^d;
+end for;
+return sum div 2;
+end function;
+
+// Calculates the number d(r,i) defined in Lemma 8.2.
+d := function(r, i)
+	sum := 0;
+	for k := 0 to r - i do
+		sum := sum + (-1)^k/Factorial(k);
+	end for;
+	return Binomial(r, i)*Factorial(r - i)*sum;
+end function;
+
+// For generic $c$, computes the density of the set $T_{n,c}$.
+Tn_density := function(n)
+	D := 2*nu(n);
+	r := D div n;
+	M_size := 0;
+	for i := 0 to r do
+		M_size := M_size + (n - 1)^i*n^(r - i)*d(r,i);
+	end for;
+	return M_size/(Factorial(r)*n^r);
+end function;
+
+R := RealField();
+
+for n in [5,6,7,9] do
+	"n:", n;
+	density := Tn_density(n);
+	"Density of T_n:", density;
+	"Density estimate:", R ! density;
+	"\n";
+end for;

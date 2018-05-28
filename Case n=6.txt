@@ -1,0 +1,57 @@
+/* Code used to evaluate the genera of the minimal subfields
+of the splitting field of the polynomial $\Phi_6$. */
+
+n := 6;
+r := 9;
+Zn := CyclicGroup(n);
+Sr := Sym(r);
+W, s, h:= WreathProduct(Zn, Sr);
+
+rotations := {@ s[i](Zn.1) : i in [1..r] @};
+rho1 := rotations[1];
+tau := [{@2,3@},{@4,5@},{@6,7@},{@8,9@}];
+
+A4 := sub<W | rho1^3*h(tau)>;
+B1 := sub<W | h([{@1,2@}])>;
+C := sub<W | rho1^3>;
+D := sub<W | rho1^2>;
+E := sub<W | rho1>;
+
+for record in MaximalSubgroups(W) do
+	M := record`subgroup;
+	M_index := Index(W, M);
+	"Index of subgroup M:", M_index;
+
+	q_M_A4 := 0;
+	for x in DoubleCosetRepresentatives(W, A4, M) do
+		A4x := A4^x;
+		q_M_A4 := q_M_A4 + Index(A4x, A4x meet M) - 1;
+	end for;
+
+	q_M_B1 := 0;
+	for x in DoubleCosetRepresentatives(W, B1, M) do
+		B1x := B1^x;
+		q_M_B1 := q_M_B1 + Index(B1x, B1x meet M) - 1;
+	end for;
+
+	q_M_C := 0;
+	for x in DoubleCosetRepresentatives(W, C, M) do
+		Cx := C^x;
+		q_M_C := q_M_C + Index(Cx, Cx meet M) - 1;
+	end for;
+
+	q_M_D := 0;
+	for x in DoubleCosetRepresentatives(W, D, M) do
+		Dx := D^x;
+		q_M_D := q_M_D + Index(Dx, Dx meet M) - 1;
+	end for;
+	
+	q_M_E := 0;
+	for x in DoubleCosetRepresentatives(W, E, M) do
+		Ex := E^x;
+		q_M_E := q_M_E + Index(Ex, Ex meet M) - 1;
+	end for;
+
+	genus := 1 - M_index + (q_M_A4 + 20*q_M_B1 + 3*q_M_C + 2*q_M_D + 2*q_M_E) div 2;
+	"Genus of fixed field of M:", genus, "\n";
+end for;

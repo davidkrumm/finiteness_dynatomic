@@ -1,0 +1,24 @@
+/* Code used to evaluate the function $\nu$ as well as the degrees
+of the polynomials $Delta_{n,d}$ defined in Section 4 of the paper. */
+
+nu := function(s)
+sum := 0;
+for d in Divisors(s) do
+	sum := sum + MoebiusMu(s div d)*2^d;
+end for;
+return sum div 2;
+end function;
+
+DeltaDegree := function(n, d)
+if d lt n then
+	return nu(d)*EulerPhi(n div d);
+elif d eq n then
+	sum := 0;
+	for k in Divisors(n) do
+		if k lt n then
+			sum := sum + nu(k)*EulerPhi(n div k);
+		end if;
+	end for;
+	return nu(n) - sum;
+end if;
+end function;

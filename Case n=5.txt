@@ -1,0 +1,42 @@
+/* Code used to evaluate the genera of the minimal subfields
+of the splitting field of the polynomial $\Phi_5$. */
+
+n := 5;
+r := 6;
+Zn := CyclicGroup(n);
+Sr := Sym(r);
+W, s, h:= WreathProduct(Zn, Sr);
+
+alpha := Sr ! [{@1, 2@}, {@3, 4@}, {@5, 6@}];
+A := sub<W | h(alpha)>;
+beta := Sr ! [{@1, 2@}];
+B := sub<W | h(beta)>;
+rho1 := s[1](Zn.1);
+C := sub<W | rho1>;
+
+for record in MaximalSubgroups(W) do
+	M := record`subgroup;
+	M_index := Index(W, M);
+	"Index of subgroup M:", M_index;
+
+	g_infty := 0;
+	for x in DoubleCosetRepresentatives(W, A, M) do
+		Ax := A^x;
+		g_infty := g_infty + Index(Ax, Ax meet M) - 1;
+	end for;
+
+	g_5 := 0;
+		for x in DoubleCosetRepresentatives(W, B, M) do
+		Bx := B^x;
+		g_5 := g_5 + 11*(Index(Bx, Bx meet M) - 1);
+	end for;
+
+	g_1 := 0;
+		for x in DoubleCosetRepresentatives(W, C, M) do
+		Cx := C^x;
+		g_1 := g_1 + 4*(Index(Cx, Cx meet M) - 1);
+	end for;
+
+	genus := 1 - M_index + (g_infty + g_5 + g_1) div 2;
+	"Genus of fixed field of M:", genus, "\n";
+end for;
