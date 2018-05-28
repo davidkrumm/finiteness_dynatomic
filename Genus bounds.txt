@@ -42,7 +42,7 @@ end function;
 // The code below carries out the calculations described 
 // in the proof of Theorem 7.5 in the paper.
 
-n := 9;
+n := 7;
 D := 2*nu(n);
 r := D div n;
 u_factor := Factorial(r - 2)*n^(r - 1);
